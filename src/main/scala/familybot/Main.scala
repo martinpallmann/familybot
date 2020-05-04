@@ -16,6 +16,7 @@ import de.martinpallmann.gchat.circe._
 import org.http4s.circe.CirceEntityEncoder._
 import org.http4s.circe.CirceEntityDecoder._
 import org.http4s.headers.Authorization
+import org.slf4j.LoggerFactory
 import verify.JWTVerify
 
 object Main extends Bot {
@@ -39,12 +40,17 @@ object Main extends Bot {
       case req @ POST -> Root =>
         for {
           evt <- req.as[BotRequest]
-          resp <- Ok(BotResponse.Text(validate(req).toString).toMessage)
+          resp <- {
+            validate(req)
+            Ok(BotResponse.Text("Hello").toMessage)
+          }
         } yield (resp)
     }
   }
 
-  def validate(req: Request[IO]): Option[Boolean] = {
+  private val logger = LoggerFactory.getLogger(getClass)
+
+  def validate(req: Request[IO]): Unit = {
     def extractToken(c: Credentials) = c match {
       case Credentials.Token(_, token) => Some(token)
       case _                           => None
@@ -52,7 +58,7 @@ object Main extends Bot {
     for {
       a <- req.headers.get(Authorization)
       t <- extractToken(a.credentials)
-    } yield JWTVerify.isValid(t)
+    } yield logger.info(Verifyer.verify(t))
   }
 
   override def httpApp: Kleisli[IO, Request[IO], Response[IO]] =

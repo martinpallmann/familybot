@@ -1,0 +1,13 @@
+<configuration>
+
+  <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+
+    <encoder>
+      <pattern>%highlight(%-5level) %cyan(%logger)\n%msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <root level="info">
+    <appender-ref ref="stdout" />
+  </root>
+</configuration>
