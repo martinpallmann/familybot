@@ -17,7 +17,6 @@ import org.http4s.circe.CirceEntityEncoder._
 import org.http4s.circe.CirceEntityDecoder._
 import org.http4s.headers.Authorization
 import org.slf4j.LoggerFactory
-import verify.JWTVerify
 
 object Main extends Bot {
   def onAddedToSpace(eventTime: Instant,

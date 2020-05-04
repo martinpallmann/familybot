@@ -7,6 +7,7 @@ import com.google.api.client.googleapis.auth.oauth2.{
   GoogleIdTokenVerifier,
   GooglePublicKeysManager
 }
+import scala.jdk.CollectionConverters._
 import com.google.api.client.http.apache.ApacheHttpTransport
 import com.google.api.client.json.JsonFactory
 import com.google.api.client.json.jackson.JacksonFactory
@@ -42,7 +43,8 @@ object Verifyer {
         idToken.verifyIssuer(CHAT_ISSUER)
       ) match {
         case (t, a, i) =>
-          s"token is valid: $t, audience is valid: $a, issuer is valid: $i"
+          s"""token is valid: $t, audience is valid: $a, issuer is valid: $i
+             |Audience: ${idToken.getPayload.getAudienceAsList.asScala}""".stripMargin
       }
     }
   }
