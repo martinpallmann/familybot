@@ -7,6 +7,7 @@ lazy val root = (project in file("."))
     name := "FamilyBot",
     libraryDependencies ++= Seq(
       "de.martinpallmann.gchat" %% "gchat-bot" % "0.0.17",
+      "ch.qos.logback" % "logback-classic" % "1.2.3",
       "com.google.api-client" % "google-api-client" % "1.30.9",
       "com.google.http-client" % "google-http-client-jackson" % "1.29.2",
     ),
