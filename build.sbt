@@ -7,7 +7,8 @@ lazy val root = (project in file("."))
     name := "FamilyBot",
     libraryDependencies ++= Seq(
       "de.martinpallmann.gchat" %% "gchat-bot" % "0.0.17",
-      "org.tpolecat" %% "skunk-core" % "0.0.7"
+      "com.google.api-client" % "google-api-client" % "1.30.9",
+      "com.google.http-client" % "google-http-client-jackson" % "1.29.2",
     ),
     sbt.Keys.mainClass in Compile := Some("familybot.Main"),
     exportJars := true
