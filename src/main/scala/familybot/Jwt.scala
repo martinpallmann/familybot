@@ -13,6 +13,7 @@ import com.auth0.jwt.interfaces.RSAKeyProvider
 import com.google.api.client.googleapis.auth.oauth2.GooglePublicKeysManager
 import com.google.api.client.http.apache.ApacheHttpTransport
 import com.google.api.client.json.jackson.JacksonFactory
+import familybot.auth.KeyProvider
 import io.circe.{Json, JsonObject}
 import org.slf4j.LoggerFactory
 
@@ -40,7 +41,7 @@ object Jwt {
   }
 
   def verifier: JWTVerifier = {
-    JWT.require(Algorithm.RSA256(new KeyProvider())).build()
+    JWT.require(Algorithm.RSA256(KeyProvider())).build()
   }
 
   def publicKeys: List[RSAPublicKey] =
@@ -63,67 +64,11 @@ object Jwt {
     })
 
   def verify(token: String): Unit = {
-    val ok = verifiers.exists(_(token))
     Try {
       verifier.verify(token)
+    } match {
+      case Success(_) => logger.debug("token is valid")
+      case Failure(e) => logger.debug("token is invalid")
     }
-    if (ok) {
-      logger.debug("token is valid")
-    } else {
-      logger.debug("token is invalid")
-    }
-  }
-
-  class KeyProvider extends RSAKeyProvider {
-
-    def publicKey(s: Json): String = {
-      s.as[String].toTry.get
-    }
-
-    def publicKeys: Map[String, String] = {
-      val json = parse(
-        Source
-          .fromInputStream(
-            new URL(PUBLIC_CERT_URL_PREFIX + CHAT_ISSUER).openStream(),
-            "UTF-8"
-          )
-          .getLines()
-          .mkString("\n")
-      ).toTry.get.as[JsonObject].toTry.get
-
-      json.toMap.view.mapValues(publicKey).toMap
-    }
-
-    def certContent(s: String): String =
-      s.replace("-----BEGIN CERTIFICATE-----\n", "")
-        .replace("\n-----END CERTIFICATE-----\n", "")
-
-    def getPublicKeyById(keyId: String): RSAPublicKey = {
-      val key = publicKeys
-        .get(keyId)
-        .flatMap(s => {
-          Try {
-            val cert = certContent(s)
-            logger.debug("CERT>>>")
-            logger.debug(cert)
-            logger.debug("<<<CERT")
-            val encoded = Base64.getDecoder.decode(cert)
-            logger.debug(s"${encoded.size}")
-            val kf = KeyFactory.getInstance("RSA")
-            kf.generatePublic(new X509EncodedKeySpec(encoded))
-          } match {
-            case Success(value) => Some(value)
-            case Failure(exception) =>
-              logger.warn("could not create key", exception)
-              None
-          }
-        })
-      logger.debug(s"THE KEY\n>>>\n$key\n<<<\n")
-      null
-    }
-
-    def getPrivateKey: RSAPrivateKey = null
-
-    def getPrivateKeyId: String = null
   }
 }

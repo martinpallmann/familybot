@@ -12,7 +12,9 @@ lazy val root = (project in file("."))
       "com.google.http-client" % "google-http-client-jackson" % "1.29.2",
       "com.auth0" % "java-jwt" % "3.10.2",
       "io.circe" %% "circe-parser" % "0.13.0",
+      "io.monix" %% "minitest" % "2.8.2" % Test,
     ),
+    testFrameworks += new TestFramework("minitest.runner.Framework"),
     sbt.Keys.mainClass in Compile := Some("familybot.Main"),
     exportJars := true
   )
