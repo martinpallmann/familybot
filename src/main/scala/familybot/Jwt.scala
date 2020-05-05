@@ -97,17 +97,23 @@ object Jwt {
     def getPublicKeyById(keyId: String): RSAPublicKey = {
       val key = publicKeys
         .get(keyId)
-        .map(s => {
-
-          val lines = Source
-            .fromString(s)
-            .getLines()
-          val cert = lines
-            .slice(1, lines.length - 1)
-            .mkString("\n")
-          val encoded = Base64.getDecoder.decode(cert)
-          val kf = KeyFactory.getInstance("RSA")
-          kf.generatePublic(new X509EncodedKeySpec(encoded))
+        .flatMap(s => {
+          Try {
+            val lines = Source
+              .fromString(s)
+              .getLines()
+            val cert = lines
+              .slice(1, lines.length - 1)
+              .mkString("\n")
+            val encoded = Base64.getDecoder.decode(cert)
+            val kf = KeyFactory.getInstance("RSA")
+            kf.generatePublic(new X509EncodedKeySpec(encoded))
+          } match {
+            case Success(value) => Some(value)
+            case Failure(exception) =>
+              logger.warn("could not create key", exception)
+              None
+          }
         })
       logger.debug(s"THE KEY\n>>>\n$key\n<<<\n")
       null
