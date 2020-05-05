@@ -46,7 +46,9 @@ object Jwt {
     def getPublicKeyById(keyId: String): RSAPublicKey = {
       logger.debug(s"keyId ${base64Decode(keyId)}")
       publicKeys.foreach(k => {
-        logger.debug(s"PUBLIC KEY $k")
+        logger.debug(s"PUBLIC KEY START")
+        logger.debug(s"$k")
+        logger.debug(s"PUBLIC KEY END")
       })
       publicKeys.headOption.orNull
     }
