@@ -4,7 +4,7 @@ import java.nio.charset.StandardCharsets
 import java.security.interfaces.{RSAPrivateKey, RSAPublicKey}
 import java.util.Base64
 
-import com.auth0.jwt.JWT
+import com.auth0.jwt.{JWT, JWTVerifier}
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.interfaces.RSAKeyProvider
 import com.google.api.client.googleapis.auth.oauth2.GooglePublicKeysManager
@@ -36,29 +36,21 @@ object Jwt {
       .filter(_.isInstanceOf[RSAPublicKey])
       .map(_.asInstanceOf[RSAPublicKey])
 
-  def keyProvider: RSAKeyProvider = new RSAKeyProvider {
-    def getPublicKeyById(keyId: String): RSAPublicKey = {
-      logger.debug(s"keyId $keyId")
-      publicKeys.foreach(k => {
-        logger.debug(s"PUBLIC KEY START")
-        logger.debug(s"${k.getClass}")
-        logger.debug(s"$k")
-        logger.debug(s"PUBLIC KEY END")
-      })
-      publicKeys.headOption.orNull
-    }
-    def getPrivateKey: RSAPrivateKey = null
-    def getPrivateKeyId: String = null
-  }
+  def verifiers: List[String => Boolean] =
+    publicKeys.map(k => {
+      val v = JWT.require(Algorithm.RSA256(k, null)).build()
+      s: String =>
+        Try {
+          v.verify(s)
+        }.isSuccess
+    })
 
   def verify(token: String): Unit = {
-    val jwt = JWT.decode(token)
-    val verifier = JWT.require(Algorithm.RSA256(keyProvider)).build()
-    Try {
-      verifier.verify(jwt)
-    } match {
-      case Success(_)         => logger.debug("valid")
-      case Failure(exception) => logger.debug("invalid", exception)
+    val ok = verifiers.exists(_(token))
+    if (ok) {
+      logger.debug("token is valid")
+    } else {
+      logger.debug("token is invalid")
     }
   }
 }
