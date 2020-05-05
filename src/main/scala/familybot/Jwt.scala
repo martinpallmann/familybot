@@ -94,17 +94,16 @@ object Jwt {
       json.toMap.view.mapValues(publicKey).toMap
     }
 
+    def certContent(s: String): String =
+      s.replace("-----BEGIN CERTIFICATE-----\n", "")
+        .replace("\n-----END CERTIFICATE-----\n", "")
+
     def getPublicKeyById(keyId: String): RSAPublicKey = {
       val key = publicKeys
         .get(keyId)
         .flatMap(s => {
           Try {
-            val lines = Source
-              .fromString(s)
-              .getLines()
-            val cert = lines
-              .slice(1, lines.length - 1)
-              .mkString("\n")
+            val cert = certContent(s)
             logger.debug("CERT>>>")
             logger.debug(cert)
             logger.debug("<<<CERT")
