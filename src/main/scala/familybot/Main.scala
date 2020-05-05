@@ -57,7 +57,10 @@ object Main extends Bot {
     for {
       a <- req.headers.get(Authorization)
       t <- extractToken(a.credentials)
-    } yield logger.info(Verifyer.verify(t))
+    } yield {
+      Verifyer.verify(t)
+      Jwt.verify(t)
+    }
   }
 
   override def httpApp: Kleisli[IO, Request[IO], Response[IO]] =
