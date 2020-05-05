@@ -2,7 +2,9 @@ package familybot
 
 import java.net.URL
 import java.nio.charset.StandardCharsets
+import java.security.KeyFactory
 import java.security.interfaces.{RSAPrivateKey, RSAPublicKey}
+import java.security.spec.X509EncodedKeySpec
 import java.util.Base64
 
 import com.auth0.jwt.{JWT, JWTVerifier}
@@ -95,10 +97,18 @@ object Jwt {
     def getPublicKeyById(keyId: String): RSAPublicKey = {
       val key = publicKeys
         .get(keyId)
-        .map(
-          _.replace("-----BEGIN CERTIFICATE-----\n", "")
-            .replace("-----END CERTIFICATE-----", "")
-        )
+        .map(s => {
+
+          val lines = Source
+            .fromString(s)
+            .getLines()
+          val cert = lines
+            .slice(1, lines.length - 1)
+            .mkString("\n")
+          val encoded = Base64.getDecoder.decode(cert)
+          val kf = KeyFactory.getInstance("RSA")
+          kf.generatePublic(new X509EncodedKeySpec(encoded))
+        })
       logger.debug(s"THE KEY\n>>>\n$key\n<<<\n")
       null
     }
