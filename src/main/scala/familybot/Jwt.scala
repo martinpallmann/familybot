@@ -106,6 +106,7 @@ object Jwt {
               .slice(1, lines.length - 1)
               .mkString("\n")
             val encoded = Base64.getDecoder.decode(cert)
+            logger.debug(s"${encoded.size}")
             val kf = KeyFactory.getInstance("RSA")
             kf.generatePublic(new X509EncodedKeySpec(encoded))
           } match {
