@@ -33,6 +33,6 @@ object Jwt {
     val jwt = JWT.decode(token)
     logger.debug(s"alg ${jwt.getAlgorithm}")
     logger.debug(s"pbk ${publicKeys.size}")
-    JWT.require(Algorithm.RSA256(RSAPublicKey, null))
+//    JWT.require(Algorithm.RSA256(RSAPublicKey, null))
   }
 }
