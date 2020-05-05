@@ -41,6 +41,7 @@ object Jwt {
       val v = JWT
         .require(Algorithm.RSA256(k, null))
         .withIssuer("chat@system.gserviceaccount.com")
+        .withAudience("301972490637") // Google project number
         .build()
       s: String =>
         Try {

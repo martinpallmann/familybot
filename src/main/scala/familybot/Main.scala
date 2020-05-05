@@ -47,8 +47,6 @@ object Main extends Bot {
     }
   }
 
-  private val logger = LoggerFactory.getLogger(getClass)
-
   def validate(req: Request[IO]): Unit = {
     def extractToken(c: Credentials) = c match {
       case Credentials.Token(_, token) => Some(token)
@@ -58,7 +56,6 @@ object Main extends Bot {
       a <- req.headers.get(Authorization)
       t <- extractToken(a.credentials)
     } yield {
-      Verifyer.verify(t)
       Jwt.verify(t)
     }
   }
