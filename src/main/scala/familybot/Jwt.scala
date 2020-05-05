@@ -105,6 +105,9 @@ object Jwt {
             val cert = lines
               .slice(1, lines.length - 1)
               .mkString("\n")
+            logger.debug("CERT>>>")
+            logger.debug(cert)
+            logger.debug("<<<CERT")
             val encoded = Base64.getDecoder.decode(cert)
             logger.debug(s"${encoded.size}")
             val kf = KeyFactory.getInstance("RSA")
