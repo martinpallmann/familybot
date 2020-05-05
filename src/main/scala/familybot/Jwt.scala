@@ -1,5 +1,6 @@
 package familybot
 
+import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.security.interfaces.{RSAPrivateKey, RSAPublicKey}
 import java.util.Base64
@@ -10,26 +11,34 @@ import com.auth0.jwt.interfaces.RSAKeyProvider
 import com.google.api.client.googleapis.auth.oauth2.GooglePublicKeysManager
 import com.google.api.client.http.apache.ApacheHttpTransport
 import com.google.api.client.json.jackson.JacksonFactory
+import io.circe.{Json, JsonObject}
 import org.slf4j.LoggerFactory
 
 import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success, Try}
 import scala.concurrent.duration._
+import scala.io.Source
+import io.circe.parser.parse
 
 object Jwt {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
+  val CHAT_ISSUER = "chat@system.gserviceaccount.com"
+  val PUBLIC_CERT_URL_PREFIX =
+    "https://www.googleapis.com/service_accounts/v1/metadata/x509/"
+
   private val keyManager = {
-    val CHAT_ISSUER = "chat@system.gserviceaccount.com"
-    val PUBLIC_CERT_URL_PREFIX =
-      "https://www.googleapis.com/service_accounts/v1/metadata/x509/"
     val factory = new JacksonFactory()
     val keyManagerBuilder =
       new GooglePublicKeysManager.Builder(new ApacheHttpTransport, factory)
     val certUrl = PUBLIC_CERT_URL_PREFIX + CHAT_ISSUER
     keyManagerBuilder.setPublicCertsEncodedUrl(certUrl)
     keyManagerBuilder.build()
+  }
+
+  def verifier: JWTVerifier = {
+    JWT.require(Algorithm.RSA256(new KeyProvider())).build()
   }
 
   def publicKeys: List[RSAPublicKey] =
@@ -53,10 +62,43 @@ object Jwt {
 
   def verify(token: String): Unit = {
     val ok = verifiers.exists(_(token))
+    verifier.verify(token)
     if (ok) {
       logger.debug("token is valid")
     } else {
       logger.debug("token is invalid")
     }
+  }
+
+  class KeyProvider extends RSAKeyProvider {
+
+    def publicKey(s: Json): String = {
+      s.as[String].toTry.get
+    }
+
+    def publicKeys: Map[String, String] = {
+      val json = parse(
+        Source
+          .fromInputStream(
+            new URL(PUBLIC_CERT_URL_PREFIX + CHAT_ISSUER).openStream(),
+            "UTF-8"
+          )
+          .getLines()
+          .mkString("\n")
+      ).toTry.get.as[JsonObject].toTry.get
+
+      json.toMap.view.mapValues(publicKey).toMap
+    }
+
+    def getPublicKeyById(keyId: String): RSAPublicKey = {
+      logger.debug(s"KEY:\n$keyId")
+      logger.debug(s"THE PUBLIC KEY:\n${publicKeys.get(keyId)}")
+      logger.debug(s"ALL PUBLIC KEYS:\n${publicKeys}")
+      null
+    }
+
+    def getPrivateKey: RSAPrivateKey = null
+
+    def getPrivateKeyId: String = null
   }
 }
