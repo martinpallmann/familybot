@@ -1,6 +1,8 @@
 package familybot
 
+import java.nio.charset.StandardCharsets
 import java.security.interfaces.{RSAPrivateKey, RSAPublicKey}
+import java.util.Base64
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
@@ -34,9 +36,15 @@ object Jwt {
       .filter(_.isInstanceOf[RSAPublicKey])
       .map(_.asInstanceOf[RSAPublicKey])
 
+  def base64Decode(s: String) =
+    Try {
+      Base64.getDecoder.decode(s)
+      new String(Base64.getDecoder.decode(s), StandardCharsets.UTF_8)
+    }.getOrElse(s"not decoded: $s")
+
   def keyProvider: RSAKeyProvider = new RSAKeyProvider {
     def getPublicKeyById(keyId: String): RSAPublicKey = {
-      logger.debug(s"keyId $keyId")
+      logger.debug(s"keyId ${base64Decode(keyId)}")
       publicKeys.foreach(k => {
         logger.debug(s"PUBLIC KEY $k")
       })
