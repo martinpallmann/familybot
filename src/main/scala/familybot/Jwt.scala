@@ -38,7 +38,10 @@ object Jwt {
 
   def verifiers: List[String => Boolean] =
     publicKeys.map(k => {
-      val v = JWT.require(Algorithm.RSA256(k, null)).build()
+      val v = JWT
+        .require(Algorithm.RSA256(k, null))
+        .withIssuer("chat@system.gserviceaccount.com")
+        .build()
       s: String =>
         Try {
           v.verify(s)
