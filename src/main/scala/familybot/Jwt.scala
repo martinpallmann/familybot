@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory
 
 import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success, Try}
+import scala.concurrent.duration._
 
 object Jwt {
 
@@ -40,6 +41,7 @@ object Jwt {
     publicKeys.map(k => {
       val v = JWT
         .require(Algorithm.RSA256(k, null))
+        .acceptLeeway(5.minutes.toSeconds)
         .withIssuer("chat@system.gserviceaccount.com")
         .withAudience("301972490637") // Google project number
         .build()
