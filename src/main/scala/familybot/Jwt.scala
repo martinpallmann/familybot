@@ -62,7 +62,9 @@ object Jwt {
 
   def verify(token: String): Unit = {
     val ok = verifiers.exists(_(token))
-    verifier.verify(token)
+    Try {
+      verifier.verify(token)
+    }
     if (ok) {
       logger.debug("token is valid")
     } else {
@@ -91,9 +93,13 @@ object Jwt {
     }
 
     def getPublicKeyById(keyId: String): RSAPublicKey = {
-      logger.debug(s"KEY:\n$keyId")
-      logger.debug(s"THE PUBLIC KEY:\n${publicKeys.get(keyId)}")
-      logger.debug(s"ALL PUBLIC KEYS:\n${publicKeys}")
+      val key = publicKeys
+        .get(keyId)
+        .map(
+          _.replace("-----BEGIN CERTIFICATE-----\n", "")
+            .replace("-----END CERTIFICATE-----", "")
+        )
+      logger.debug(s"THE KEY\n>>>\n$key\n<<<\n")
       null
     }
 
