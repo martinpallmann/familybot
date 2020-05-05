@@ -9,9 +9,9 @@ object Jwt {
 
   def verify(token: String) = {
     val jwt = JWT.decode(token)
-    logger.debug(s"Header: ${jwt.getHeader}")
-    logger.debug(s"Payload: ${jwt.getPayload}")
-    logger.debug(s"Signature: ${jwt.getSignature}")
-    logger.debug(s"Token: ${jwt.getToken}")
+    logger.debug(s"alg ${jwt.getAlgorithm}")
+    logger.debug(s"typ ${jwt.getType}")
+    logger.debug(s"cty ${jwt.getContentType}")
+    logger.debug(s"kid ${jwt.getKeyId}")
   }
 }
