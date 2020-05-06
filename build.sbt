@@ -6,10 +6,9 @@ lazy val root = (project in file("."))
   .settings(
     name := "FamilyBot",
     libraryDependencies ++= Seq(
-      "de.martinpallmann.gchat" %% "gchat-bot" % "0.0.17",
+      "de.martinpallmann.gchat" %% "gchat-bot" % "0.0.21",
       "ch.qos.logback" % "logback-classic" % "1.2.3",
-      "com.auth0" % "java-jwt" % "3.10.2",
-      "io.circe" %% "circe-parser" % "0.13.0",
+      "org.tpolecat" %% "doobie-core" % "0.8.8",
       "io.monix" %% "minitest" % "2.8.2" % Test,
     ),
     testFrameworks += new TestFramework("minitest.runner.Framework"),
@@ -17,5 +16,3 @@ lazy val root = (project in file("."))
     exportJars := true
   )
   .enablePlugins(JavaAppPackaging)
-
-def http4sVersion = "0.21.2"
