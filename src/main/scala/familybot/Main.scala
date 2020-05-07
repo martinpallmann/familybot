@@ -47,6 +47,7 @@ object Main extends Bot {
         }
         sl.save(user)
         Message(
+          actionResponse = ActionResponse(ActionResponseType.UpdateMessage),
           cards = Card(
             sections =
               Section(header = "Shopping List", widgets = sl2Widget(sl))
