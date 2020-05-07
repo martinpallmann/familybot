@@ -8,6 +8,8 @@ import de.martinpallmann.gchat.BotResponse._
 import de.martinpallmann.gchat.Bot
 import de.martinpallmann.gchat.gen._
 
+import scala.language.implicitConversions
+
 object Main extends Bot {
 
   implicit def anyToList[A](a: A): List[A] =
@@ -33,10 +35,18 @@ object Main extends Bot {
       actionResponse = t.map(t1 => ActionResponse(t1, None)),
       cards = Card(
         sections = Section(
-          widgets = WidgetMarkup(
-            keyValue = KeyValue(
-              content = c,
-              onClick = OnClick(action = FormAction(actionMethodName = s))
+          widgets = List(
+            WidgetMarkup(
+              keyValue = KeyValue(
+                content = c,
+                onClick = OnClick(action = FormAction(actionMethodName = s))
+              )
+            ),
+            WidgetMarkup(
+              keyValue = KeyValue(
+                content = c,
+                onClick = OnClick(action = FormAction(actionMethodName = s))
+              )
             )
           )
         )
