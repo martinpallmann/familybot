@@ -11,7 +11,7 @@ import de.martinpallmann.gchat.gen._
 object Main extends Bot {
 
   implicit def anyToList[A](a: A): List[A] =
-    Option(a).toIterable.toList
+    Option(a).toList
 
   implicit def anyToOptList[A](a: A): Option[List[A]] =
     Option(a).map(List.apply(_))
@@ -46,7 +46,9 @@ object Main extends Bot {
       super.run(args)
 
     case "migrate" :: _ =>
-      DbMigration(dbConfig).migrate.map(_ => ExitCode.Success)
+      println("I will perform db migrations.")
+      IO(ExitCode.Success)
+    // DbMigration(dbConfig).migrate.map(_ => ExitCode.Success)
 
     case _ =>
       println("argument missing or wrong. usage: familybot [run|migrate]")
