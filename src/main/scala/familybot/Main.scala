@@ -24,19 +24,37 @@ object Main extends Bot {
   def onMessageReceived(eventTime: Instant,
                         space: Space,
                         message: Message,
-                        user: User): Message =
+                        user: User): Message = action("Hi", "bye")
+
+  private def action(c: String,
+                     s: String,
+                     t: Option[ActionResponseType] = None) =
     Message(
+      actionResponse = t.map(t1 => ActionResponse(t1, None)),
       cards = Card(
         sections = Section(
           widgets = WidgetMarkup(
             keyValue = KeyValue(
-              content = "Hello",
-              onClick = OnClick(action = FormAction(actionMethodName = "hello"))
+              content = c,
+              onClick = OnClick(action = FormAction(actionMethodName = s))
             )
           )
         )
       )
     )
+
+  def onCardClicked(eventTime: Instant,
+                    space: Space,
+                    message: Message,
+                    user: User,
+                    a: FormAction): Message = {
+    a.actionMethodName match {
+      case Some("bye") => action("Bye", "hi", ActionResponseType.UpdateMessage)
+      case Some("hi")  => action("Hi", "bye", ActionResponseType.UpdateMessage)
+      case _           => action("What?", "bye", ActionResponseType.UpdateMessage)
+    }
+
+  }
 
   private def dbConfig: DbConfig = DbConfig()
 
