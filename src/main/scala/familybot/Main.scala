@@ -1,22 +1,17 @@
 package familybot
 
 import java.time.Instant
+import java.util.UUID
 
 import cats.effect.{ExitCode, IO}
 import de.martinpallmann.gchat.BotResponse
-import de.martinpallmann.gchat.BotResponse._
 import de.martinpallmann.gchat.Bot
 import de.martinpallmann.gchat.gen._
+import familybot.shopping.ShoppingList
 
 import scala.language.implicitConversions
 
 object Main extends Bot {
-
-  implicit def anyToList[A](a: A): List[A] =
-    Option(a).toList
-
-  implicit def anyToOptList[A](a: A): Option[List[A]] =
-    Option(a).map(List.apply(_))
 
   def onAddedToSpace(eventTime: Instant, space: Space, user: User): Message =
     BotResponse.text("hello")
@@ -26,32 +21,12 @@ object Main extends Bot {
   def onMessageReceived(eventTime: Instant,
                         space: Space,
                         message: Message,
-                        user: User): Message = action("Hi", "bye")
-
-  private def action(c: String,
-                     s: String,
-                     t: Option[ActionResponseType] = None) =
-    Message(
-      actionResponse = t.map(t1 => ActionResponse(t1, None)),
-      cards = Card(
-        sections = Section(
-          widgets = List(
-            WidgetMarkup(
-              keyValue = KeyValue(
-                content = c,
-                onClick = OnClick(action = FormAction(actionMethodName = s))
-              )
-            ),
-            WidgetMarkup(
-              keyValue = KeyValue(
-                content = c,
-                onClick = OnClick(action = FormAction(actionMethodName = s))
-              )
-            )
-          )
-        )
-      )
-    )
+                        user: User): Message = {
+    message.argumentText.fold(BotResponse.text("well..."))(s => {
+      val sl = ShoppingList(user).add(s.trim)
+      Message(cards = Card(sections = Section(widgets = sl2Widget(sl))))
+    })
+  }
 
   def onCardClicked(eventTime: Instant,
                     space: Space,
@@ -59,12 +34,32 @@ object Main extends Bot {
                     user: User,
                     a: FormAction): Message = {
     a.actionMethodName match {
-      case Some("bye") => action("Bye", "hi", ActionResponseType.UpdateMessage)
-      case Some("hi")  => action("Hi", "bye", ActionResponseType.UpdateMessage)
-      case _           => action("What?", "bye", ActionResponseType.UpdateMessage)
+      case Some("remove") =>
+        val sl = a.parameters.getOrElse(Nil).foldLeft(ShoppingList(user)) {
+          case (acc, ActionParameter(Some("id"), Some(uuid))) =>
+            acc.remove(UUID.fromString(uuid))
+          case (acc, _) => acc
+        }
+        Message(cards = Card(sections = Section(widgets = sl2Widget(sl))))
+      case _ => BotResponse.text("well...")
     }
-
   }
+
+  def sl2Widget(sl: ShoppingList): List[WidgetMarkup] =
+    sl.items.map(
+      it =>
+        WidgetMarkup(
+          keyValue = KeyValue(
+            content = it.name,
+            onClick = OnClick(
+              action = FormAction(
+                actionMethodName = "remove",
+                parameters = ActionParameter("id", it.uuid.toString)
+              )
+            )
+          )
+      )
+    )
 
   private def dbConfig: DbConfig = DbConfig()
 
