@@ -10,6 +10,11 @@ case class ShoppingList(items: List[ShoppingListItem]) {
 
   def remove(uuid: UUID): ShoppingList =
     this.copy(items = items.filterNot(_.uuid == uuid))
+
+  def save(user: User): Unit =
+    user.name.foreach(id => {
+      ShoppingList.lists = ShoppingList.lists + (id -> this)
+    })
 }
 
 object ShoppingList {

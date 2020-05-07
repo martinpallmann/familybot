@@ -24,7 +24,11 @@ object Main extends Bot {
                         user: User): Message = {
     message.argumentText.fold(BotResponse.text("well..."))(s => {
       val sl = ShoppingList(user).add(s.trim)
-      Message(cards = Card(sections = Section(widgets = sl2Widget(sl))))
+      Message(
+        cards = Card(
+          sections = Section(header = "Shopping List", widgets = sl2Widget(sl))
+        )
+      )
     })
   }
 
@@ -40,7 +44,12 @@ object Main extends Bot {
             acc.remove(UUID.fromString(uuid))
           case (acc, _) => acc
         }
-        Message(cards = Card(sections = Section(widgets = sl2Widget(sl))))
+        Message(
+          cards = Card(
+            sections =
+              Section(header = "Shopping List", widgets = sl2Widget(sl))
+          )
+        )
       case _ => BotResponse.text("well...")
     }
   }
