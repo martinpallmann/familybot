@@ -62,6 +62,7 @@ object Main extends Bot {
       it =>
         WidgetMarkup(
           keyValue = KeyValue(
+            topLabel = "1 kg",
             content = it.name,
             onClick = OnClick(
               action = FormAction(
