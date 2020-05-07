@@ -26,6 +26,7 @@ object Main extends Bot {
       val sl = ShoppingList(user).add(s.trim)
       sl.save(user)
       Message(
+        actionResponse = ActionResponse(ActionResponseType.UpdateMessage),
         cards = Card(
           sections = Section(header = "Shopping List", widgets = sl2Widget(sl))
         )
